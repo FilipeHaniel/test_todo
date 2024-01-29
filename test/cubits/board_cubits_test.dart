@@ -89,6 +89,11 @@ void main() {
     test('deve remover uma tasks', () async {
       when(() => repository.update(any())).thenAnswer((_) async => []);
 
+      const task = Task(id: 1, description: 'description');
+      cubit.addTask([task]);
+
+      expect((cubit.state as GettedTasksBoardState).tasks.length, 0);
+
       expect(
         cubit.stream,
         emitsInOrder([
@@ -96,18 +101,18 @@ void main() {
         ]),
       );
 
-      const task = Task(id: 1, description: 'description');
-
-      await cubit.addTask(task);
-
+      await cubit.removeTask(task);
       final state = cubit.state as GettedTasksBoardState;
 
-      expect(state.tasks.length, 1);
+      expect(state.tasks.length, 0);
       expect(state.tasks, [task]);
     });
 
     test('Deve retornar um estado de erro ao falhar', () async {
       when(() => repository.update(any())).thenThrow(Exception('Error'));
+
+      const task = Task(id: 1, description: 'description');
+      cubit.addTask(task);
 
       expect(
           cubit.stream,
@@ -116,8 +121,6 @@ void main() {
               isA<FailureBoardState>(),
             ],
           ));
-
-      const task = Task(id: 1, description: 'description');
 
       await cubit.addTask(task);
     });
